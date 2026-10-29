@@ -9,7 +9,7 @@ import torch
 from PIL import Image
 
 import config
-from dataset import make_consensus_boundary
+from Models.bsds_dataset import make_consensus_boundary
 from Models.complex_cell_model import SimpleComplexEdgeNet
 
 PROJECT_ROOT = Path(__file__).resolve().parent
