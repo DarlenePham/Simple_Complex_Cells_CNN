@@ -94,6 +94,31 @@ def segmentation_to_boundary(labels):
     return boundary
 
 
+def make_consensus_boundary(seg_paths, target_mode="soft"):
+    """Combine boundaries from human annotators into a consensus map.
+
+    ``soft`` returns the fraction of annotators marking each pixel as a
+    boundary. ``binary`` marks a pixel if any annotator marks it.
+    """
+    boundary_maps = [
+        segmentation_to_boundary(read_seg_file(path))
+        for path in seg_paths
+    ]
+    if not boundary_maps:
+        raise ValueError("No segmentation annotations provided.")
+
+    shapes = {boundary.shape for boundary in boundary_maps}
+    if len(shapes) != 1:
+        raise ValueError(f"Annotation dimensions do not match: {shapes}")
+
+    soft_target = np.mean(boundary_maps, axis=0).astype(np.float32)
+    if target_mode == "soft":
+        return soft_target
+    if target_mode == "binary":
+        return (soft_target > 0).astype(np.float32)
+    raise ValueError(f"Unknown target mode: {target_mode}")
+
+
 class BSDSBoundaryDataset(Dataset):
     """
     Build a soft boundary target by averaging human segmentations.
